@@ -9,11 +9,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Name"
+            android:text="@string/Language"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp">
         </TextView>
-        <EditText android:id="@+id/etName"
+        <EditText android:id="@+id/etLanguage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1">
@@ -29,12 +29,12 @@
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Email"
+            android:text="@string/Word"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp">
         </TextView>
         <EditText
-            android:id="@+id/etEmail"
+            android:id="@+id/etWord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"></EditText>
@@ -48,20 +48,20 @@
             android:id="@+id/btnAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add">
+            android:text="@string/Add_word">
         </Button>
         <Button
             android:id="@+id/btnRead"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Read">
+            android:text="@string/Read_word">
 
         </Button>
         <Button
             android:id="@+id/btnClear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear">
+            android:text="@string/Clear_word">
 
         </Button>
 

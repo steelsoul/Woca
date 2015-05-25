@@ -3,10 +3,8 @@ package com.altair.apushkar.woca.imp;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,11 +14,11 @@ import android.widget.EditText;
 import com.altair.apushkar.woca.R;
 
 public class MainActivity extends Activity implements View.OnClickListener {
-    final String LOG_TAG = "myLogs";
+    private final String LOG_TAG = "[MainActivity]";
 
-    Button btnAdd, btnRead, btnClear;
-    EditText etName, etMail;
-    DBHelper dbHelper;
+    private Button btnAdd, btnRead, btnClear;
+    private EditText etLang, etWord;
+    private DBHelper dbHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,10 +35,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         btnClear = (Button)findViewById(R.id.btnClear);
         btnClear.setOnClickListener(this);
 
-        etName = (EditText) findViewById(R.id.etName);
-        etMail = (EditText) findViewById(R.id.etEmail);
+        etLang = (EditText) findViewById(R.id.etLanguage);
+        etWord = (EditText) findViewById(R.id.etWord);
 
         dbHelper = new DBHelper(this);
+        Log.d(LOG_TAG, "Created activity");
     }
 
     @Override
@@ -48,50 +47,69 @@ public class MainActivity extends Activity implements View.OnClickListener {
         ContentValues cv = new ContentValues();
 
         // obtain data from input fields
-        String name = etName.getText().toString();
-        String email = etMail.getText().toString();
+        String language = etLang.getText().toString();
+        if (language.isEmpty()) language = "eng";
+        String word = etWord.getText().toString();
+
+        Log.i(LOG_TAG, "language: " + language + "; word: " + word);
+        // language ID
+        Integer languageID = -1;
 
         // connect to BD
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String selection = "" + DBHelper.LanguagesTable.Parameters[0] + " = ?";
+        Log.i(LOG_TAG, "SELECTION: " + selection);
+        String [] selectionArgs = {language};
+        //Cursor cu = db.query(DBHelper.LanguagesTable.Name, null, "? = ?", selectionArgs, null, null, null, null);
+        Cursor cu = db.query(DBHelper.LanguagesTable.Name,
+                null,
+                selection,
+                selectionArgs, null, null, null);
+        if (cu.moveToFirst()) {
+            int idColIndex = cu.getColumnIndex(DBHelper.LanguagesTable.Key);
+            languageID = cu.getInt(idColIndex);
+        }
+        cu.close();
+
+        Log.i(LOG_TAG, "language is " + language + " with ID " + languageID);
 
         switch (view.getId()) {
             case R.id.btnAdd:
                 Log.d(LOG_TAG, "Insert in mytable:");
 
-                // prepare data for inserting in a form: name - value
-                cv.put("name", name);
-                cv.put("email", email);
+                // prepare data for inserting in a form: language - value
+                cv.put(DBHelper.WordsTable.Parameters[0], language);
+                cv.put(DBHelper.WordsTable.Parameters[1], word);
 
-                long rowId = db.insert("mytable", null, cv);
+                long rowId = db.insert(DBHelper.WordsTable.Name, null, cv);
                 Log.d(LOG_TAG, "row with ID = " + rowId);
                 break;
             case R.id.btnRead:
-                Log.d(LOG_TAG, "Rows in mytable:");
+                Log.d(LOG_TAG, "Words: ");
 
                 // request all data from table mytable and obtain Cursor
-                Cursor c = db.query("mytable", null, null, null, null, null, null);
+                Cursor c = db.query(DBHelper.WordsTable.Name, null, null, null, null, null, null);
 
                 // set cursor position to a first row
                 if (c.moveToFirst()) {
-                    int idColIndex = c.getColumnIndex("id");
-                    int nameColIndex = c.getColumnIndex("name");
-                    int emailColIndex = c.getColumnIndex("email");
+                    int idColIndex = c.getColumnIndex(DBHelper.WordsTable.Key);
+                    int langColIndex = c.getColumnIndex(DBHelper.WordsTable.Parameters[0]);
+                    int wordColIndex = c.getColumnIndex(DBHelper.WordsTable.Parameters[1]);
 
                     do {
                         // get values
                         Log.d(LOG_TAG, "ID = " + c.getInt(idColIndex) +
-                            ", name = " + c.getString(nameColIndex) +
-                            ", email = " + c.getString(emailColIndex));
+                            ", language = " + c.getString(langColIndex) + ", word = "+ c.getString(wordColIndex));
                     } while (c.moveToNext());
+                    c.close();
                 } else {
                     Log.d(LOG_TAG, "0 rows!");
                 }
-                c.close();
                 break;
             case R.id.btnClear:
-                Log.d(LOG_TAG, "Clear mytable");
+                Log.d(LOG_TAG, "Clear ");
                 // remove all records
-                int clearCount = db.delete("mytable", null, null);
+                int clearCount = db.delete(DBHelper.WordsTable.Name, null, null);
                 Log.d(LOG_TAG, "Removed " + clearCount + " records");
                 break;
         }
@@ -100,25 +118,4 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    public class DBHelper extends SQLiteOpenHelper {
-        public DBHelper(Context context) {
-            super(context, "myDB", null, 1);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            Log.d(LOG_TAG, "Create database");
-            db.execSQL("create table mytable ("
-                + "id integer primary key autoincrement,"
-                + "name text,"
-                + "email text"
-                + ");"
-            );
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        }
-    }
 }

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Woca</string>
+    <string name="Add_word">Добавить слово</string>
+    <string name="Remove_word">Удалить слово</string>
+    <string name="Read_word">Прочесть</string>
+    <string name="Clear_word">Очистить</string>
+    <string name="Language">Язык</string>
+    <string name="Word">Слово</string>
 </resources>
