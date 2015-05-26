@@ -8,8 +8,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 
 import com.altair.apushkar.woca.R;
 
@@ -17,7 +21,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final String LOG_TAG = "[MainActivity]";
 
     private Button btnAdd, btnRead, btnClear;
-    private EditText etLang, etWord;
+    private Spinner esLang;
+    private EditText etWord;
     private DBHelper dbHelper;
 
     @Override
@@ -35,10 +40,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
         btnClear = (Button)findViewById(R.id.btnClear);
         btnClear.setOnClickListener(this);
 
-        etLang = (EditText) findViewById(R.id.etLanguage);
+        esLang = (Spinner) findViewById(R.id.language_spinner);
         etWord = (EditText) findViewById(R.id.etWord);
 
         dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                DBHelper.LanguagesTable.Name,
+                new String[] {DBHelper.LanguagesTable.Key, DBHelper.LanguagesTable.Parameters[0]},
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                cursor,
+                new String[] {/*DBHelper.LanguagesTable.Key,*/ DBHelper.LanguagesTable.Parameters[0]},
+                new int[] {android.R.id.text1},
+                0
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        esLang.setAdapter(adapter);
+
         Log.d(LOG_TAG, "Created activity");
     }
 
@@ -47,7 +74,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         ContentValues cv = new ContentValues();
 
         // obtain data from input fields
-        String language = etLang.getText().toString();
+        String language = "eng";
         if (language.isEmpty()) language = "eng";
         String word = etWord.getText().toString();
 
@@ -78,7 +105,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.d(LOG_TAG, "Insert in mytable:");
 
                 // prepare data for inserting in a form: language - value
-                cv.put(DBHelper.WordsTable.Parameters[0], language);
+                cv.put(DBHelper.WordsTable.Parameters[0], languageID);
                 cv.put(DBHelper.WordsTable.Parameters[1], word);
 
                 long rowId = db.insert(DBHelper.WordsTable.Name, null, cv);
