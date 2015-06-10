@@ -27,7 +27,7 @@ public class LanguageDB implements ILanguageDB {
     public LanguageDB(Context context, String dbName) {
         this.dbName = dbName;
         dbFileName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA/" + dbName;
-        //database = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+
     }
 
     @Override
@@ -169,7 +169,7 @@ public class LanguageDB implements ILanguageDB {
 
     public Cursor getLanguagesCursor() {
         File dbFile = new File(dbFileName);
-        Log.d(LOG_TAG, "dbFile exists: " + dbFile.exists());
+        Log.d(LOG_TAG, "dbFile exists: " + dbFile.exists() + ", canRead: " + dbFile.canRead());
         Log.d(LOG_TAG, "dbFileName: " + dbFileName);
         SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
         Cursor cursor = db.query(LanguageDB.LanguagesTable.Name,
