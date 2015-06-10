@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,11 +18,20 @@ import android.widget.Spinner;
 import com.altair.apushkar.woca.R;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+
 public class MainActivity extends Activity implements View.OnClickListener {
     private final String LOG_TAG = "[MainActivity]";
-    private final String DB_NAME = "myDB";
+    private final String DB_NAME = "temp";
 
     private Button btnAdd, btnRead, btnClear;
+    private Button btnBackup;
     private Spinner esLang;
     private EditText etWord;
     private LanguageDB langdb;
@@ -69,6 +79,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         esLang.setAdapter(adapter);
 
+        btnBackup = (Button) findViewById(R.id.btnBackup);
+
         Log.d(LOG_TAG, "Created activity");
     }
 
@@ -95,6 +107,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 langdb.clear();
                 break;
         }
+    }
+
+    public void onBackupClicked(View view) {
+        Log.d(LOG_TAG, "Backup.");
     }
 
 

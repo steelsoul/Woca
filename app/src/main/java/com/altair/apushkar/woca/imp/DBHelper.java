@@ -1,6 +1,5 @@
 package com.altair.apushkar.woca.imp;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -39,8 +38,6 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d(LOG_TAG, "Create database");
 
         if (langdbctrl != null) { langdbctrl.onCreate(db); }
-        String sqlExpression = null;
-
     }
 
     @Override

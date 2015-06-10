@@ -69,4 +69,16 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/LinearLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btnBackup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Backup"
+            android:onClick="onBackupClicked"/>
+    </LinearLayout>
+
 </LinearLayout>
