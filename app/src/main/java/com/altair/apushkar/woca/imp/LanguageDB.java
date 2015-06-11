@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.altair.apushkar.woca.api.ILanguageDB;
@@ -27,15 +28,37 @@ public class LanguageDB implements ILanguageDB {
     public LanguageDB(Context context, String dbName) {
         this.dbName = dbName;
         dbFileName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA/" + dbName;
+    }
 
+    private SQLiteDatabase openExistingDB() {
+        SQLiteDatabase database = null;
+        Log.d(LOG_TAG, "Try to open existing database");
+        try {
+            database = SQLiteDatabase.openDatabase(dbFileName, null, SQLiteDatabase.OPEN_READWRITE);
+            Log.d(LOG_TAG, "Opened existing database");
+        } catch (SQLiteException sqe) {
+            Log.e(LOG_TAG, sqe.toString());
+        }
+        return database;
+    }
+
+    private SQLiteDatabase getWritableDatabase() {
+        SQLiteDatabase db = openExistingDB();
+        if (db == null)
+        {
+            Log.d(LOG_TAG, "creating database");
+            db = SQLiteDatabase.openDatabase(dbFileName, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+            onCreate(db);
+        }
+
+        return db;
     }
 
     @Override
     public long clear() {
         Log.d(LOG_TAG, "Clear ");
         // remove all records
-        File dbFile = new File(dbFileName);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        SQLiteDatabase db = getWritableDatabase();
         int clearCount = db.delete(LanguageDB.WordsTable.Name, null, null);
         Log.d(LOG_TAG, "Removed " + clearCount + " records");
         db.close();
@@ -61,8 +84,7 @@ public class LanguageDB implements ILanguageDB {
 
     @Override
     public long addLanguage(String lang) {
-        File dbFile = new File(dbFileName);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        SQLiteDatabase db = getWritableDatabase();
         long result = addLanguageNoOpen(lang, db);
         db.close();
         return result;
@@ -94,8 +116,7 @@ public class LanguageDB implements ILanguageDB {
         cv.put(WordsTable.Parameters[1], wordType.getID());
         cv.put(WordsTable.Parameters[2], word);
 
-        File dbFile = new File(dbFileName);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        SQLiteDatabase db = getWritableDatabase();
 
         db.beginTransaction();
         try {
@@ -112,8 +133,7 @@ public class LanguageDB implements ILanguageDB {
     public void printWordTable() {
         Log.d(LOG_TAG, "Words: ");
 
-        File dbFile = new File(dbFileName);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        SQLiteDatabase db = getWritableDatabase();
         // request all data from table mytable and obtain Cursor
         try {
             Cursor c = db.query(LanguageDB.WordsTable.Name, null, null, null, null, null, null);
@@ -168,10 +188,7 @@ public class LanguageDB implements ILanguageDB {
     }
 
     public Cursor getLanguagesCursor() {
-        File dbFile = new File(dbFileName);
-        Log.d(LOG_TAG, "dbFile exists: " + dbFile.exists() + ", canRead: " + dbFile.canRead());
-        Log.d(LOG_TAG, "dbFileName: " + dbFileName);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(LanguageDB.LanguagesTable.Name,
                 new String[] {LanguageDB.LanguagesTable.Key, LanguageDB.LanguagesTable.Parameters[0]},
                 null,
@@ -179,38 +196,37 @@ public class LanguageDB implements ILanguageDB {
                 null,
                 null,
                 null);
+
         return cursor;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        String sqlExpression = "create table " + LanguageDB.LanguagesTable.Name + " ("
-//                + LanguageDB.LanguagesTable.Key + " integer primary key autoincrement, "
-//                + LanguageDB.LanguagesTable.Parameters[0] + " " + LanguageDB.LanguagesTable.PTypes[0] + ");";
-//        db.execSQL(sqlExpression);
-//        Log.i(LOG_TAG, sqlExpression);
-//
-//        sqlExpression = "create table " + LanguageDB.PresentationTable.Name + " ("
-//                + LanguageDB.PresentationTable.Key + " integer primary key autoincrement, "
-//                + LanguageDB.PresentationTable.Parameters[0] + " " + LanguageDB.PresentationTable.PTypes[0] + ", "
-//                + LanguageDB.PresentationTable.Parameters[1] + " " + LanguageDB.PresentationTable.PTypes[1]+ ");";
-//
-//        db.execSQL(sqlExpression);
-//        Log.i(LOG_TAG, sqlExpression);
-//
-//        sqlExpression = "create table " + LanguageDB.WordsTable.Name + " (" + LanguageDB.WordsTable.Key
-//                + " integer primary key autoincrement, "
-//                + LanguageDB.WordsTable.Parameters[0] + " " + LanguageDB.WordsTable.PTypes[0] + ", "
-//                + LanguageDB.WordsTable.Parameters[1] + " " + LanguageDB.WordsTable.PTypes[1] + ", "
-//                + LanguageDB.WordsTable.Parameters[2] + " " + LanguageDB.WordsTable.PTypes[2] + ");";
-//        db.execSQL(sqlExpression);
-//        Log.i(LOG_TAG, sqlExpression);
-//
-//        this.addLanguageNoOpen("en", db);
-//        this.addLanguageNoOpen("ru", db);
-//        this.addLanguageNoOpen("de", db);
-        boolean result = importDB("temp", dbName);
-        Log.d(LOG_TAG, "Importing Database ends with " + result);
+        String sqlExpression = "create table " + LanguageDB.LanguagesTable.Name + " ("
+                + LanguageDB.LanguagesTable.Key + " integer primary key autoincrement, "
+                + LanguageDB.LanguagesTable.Parameters[0] + " " + LanguageDB.LanguagesTable.PTypes[0] + ");";
+        db.execSQL(sqlExpression);
+        Log.i(LOG_TAG, sqlExpression);
+
+        sqlExpression = "create table " + LanguageDB.PresentationTable.Name + " ("
+                + LanguageDB.PresentationTable.Key + " integer primary key autoincrement, "
+                + LanguageDB.PresentationTable.Parameters[0] + " " + LanguageDB.PresentationTable.PTypes[0] + ", "
+                + LanguageDB.PresentationTable.Parameters[1] + " " + LanguageDB.PresentationTable.PTypes[1]+ ");";
+
+        db.execSQL(sqlExpression);
+        Log.i(LOG_TAG, sqlExpression);
+
+        sqlExpression = "create table " + LanguageDB.WordsTable.Name + " (" + LanguageDB.WordsTable.Key
+                + " integer primary key autoincrement, "
+                + LanguageDB.WordsTable.Parameters[0] + " " + LanguageDB.WordsTable.PTypes[0] + ", "
+                + LanguageDB.WordsTable.Parameters[1] + " " + LanguageDB.WordsTable.PTypes[1] + ", "
+                + LanguageDB.WordsTable.Parameters[2] + " " + LanguageDB.WordsTable.PTypes[2] + ");";
+        db.execSQL(sqlExpression);
+        Log.i(LOG_TAG, sqlExpression);
+
+        this.addLanguageNoOpen("en", db);
+        this.addLanguageNoOpen("ru", db);
+        this.addLanguageNoOpen("de", db);
     }
 
     @Override
@@ -222,6 +238,7 @@ public class LanguageDB implements ILanguageDB {
 
     private boolean importDB(String importFrom, String importTo)
     {
+        boolean result = true;
         Log.d(LOG_TAG, "Import " + importFrom + " into " + importTo);
         File externalDir = android.os.Environment.getExternalStorageDirectory();
         File wocaDir = new File(externalDir.getAbsolutePath() + "/WOCA");
@@ -244,9 +261,10 @@ public class LanguageDB implements ILanguageDB {
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
+            result = false;
             Log.d(LOG_TAG, "Exception: " + e.toString());
         }
-        return true;
+        return result;
     }
 
     public static final class PresentationTable {
