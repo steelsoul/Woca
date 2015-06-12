@@ -5,6 +5,8 @@
     <string name="Read_word">Прочесть</string>
     <string name="Clear_word">Очистить</string>
     <string name="Language">Язык</string>
+    <string name="TranslationDirection">Направление перевода</string>
+    <string name="Search">Поиск</string>
     <string name="Word">Слово</string>
     <string name="Backup">Скопировать</string>
 </resources>

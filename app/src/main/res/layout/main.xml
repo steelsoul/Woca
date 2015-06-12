@@ -10,7 +10,7 @@
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/Language"
+            android:text="@string/TranslationDirection"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp">
         </TextView>
@@ -23,14 +23,14 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/LinearLayout3"
+        android:id="@+id/LinearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/Word"
+            android:text="@string/Search"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp">
         </TextView>
@@ -39,46 +39,17 @@
             android:id="@+id/etWord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"></EditText>
+            android:layout_weight="1">
+        </EditText>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/LinearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Add_word">
-        </Button>
-        <Button
-            android:id="@+id/btnRead"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Read_word">
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:id="@+id/listView">
 
-        </Button>
-        <Button
-            android:id="@+id/btnClear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Clear_word">
-
-        </Button>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/LinearLayout4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/btnBackup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Backup"
-            android:onClick="onBackupClicked"/>
-    </LinearLayout>
+    </ListView>
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.altair.apushkar.woca.api;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.lang.reflect.Modifier;
@@ -57,6 +58,8 @@ public interface ILanguageDB {
     public boolean removeTranslation(Integer translationID);
     public String translateFrom(String from);
     public String translateTo(String to);
+
+    public Cursor getLanguagesCursor();
 
     public void onCreate(SQLiteDatabase db);
     public void onUpgrade(SQLiteDatabase db);

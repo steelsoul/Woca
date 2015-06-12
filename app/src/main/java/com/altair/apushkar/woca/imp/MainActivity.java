@@ -2,15 +2,11 @@
 package com.altair.apushkar.woca.imp;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -18,23 +14,13 @@ import android.widget.Spinner;
 import com.altair.apushkar.woca.R;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity {
     private final String LOG_TAG = "[MainActivity]";
-    private final String DB_NAME = "temp";
+    private final String DB_NAME = "a5.db";
 
-    private Button btnAdd, btnRead, btnClear;
-    private Button btnBackup;
-    private Spinner esLang;
+    private Spinner esDirection;
     private EditText etWord;
-    private LanguageDB langdb;
+    private ILanguageDB langdb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,17 +28,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         setContentView(R.layout.main);
 
-        btnAdd = (Button)findViewById(R.id.btnAdd);
-        btnAdd.setOnClickListener(this);
-
-        btnRead = (Button)findViewById(R.id.btnRead);
-        btnRead.setOnClickListener(this);
-
-        btnClear = (Button)findViewById(R.id.btnClear);
-        btnClear.setOnClickListener(this);
-
-        esLang = (Spinner) findViewById(R.id.language_spinner);
-        esLang.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        esDirection = (Spinner) findViewById(R.id.language_spinner);
+        esDirection.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
@@ -68,50 +45,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
         langdb = new LanguageDB(this, DB_NAME);
 
         Cursor cursor = langdb.getLanguagesCursor();
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+        if (cursor.moveToFirst()) {
+            Log.i(LOG_TAG, "CS: " + cursor.toString());
+        } else {
+            Log.d(LOG_TAG, "Cursor is EMPTY!");
+        }
+        /*SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
                 android.R.layout.simple_spinner_item,
                 cursor,
-                new String[] {LanguageDB.LanguagesTable.Parameters[0]},
+                new String[] {""},
                 new int[] {android.R.id.text1},
                 0
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        esLang.setAdapter(adapter);
-
-        btnBackup = (Button) findViewById(R.id.btnBackup);
+        );*/
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //esDirection.setAdapter(adapter);
 
         Log.d(LOG_TAG, "Created activity");
     }
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btnAdd:
-                int selectionPos = esLang.getSelectedItemPosition();
-                Log.d(LOG_TAG, "Language selected pos: " + selectionPos);
-                if (selectionPos == AdapterView.INVALID_POSITION) {
-                    selectionPos = 0;
-                }
-                ++selectionPos;
-                Log.d(LOG_TAG, "Language selected pos corrected: " + selectionPos);
-                String word = etWord.getText().toString();
-                Log.d(LOG_TAG, "Word: " + word);
-                ILanguageDB.eWord_Type wordType = ILanguageDB.eWord_Type.eWT_Unknown;
-                langdb.addWord(selectionPos, wordType, word);
-                break;
-            case R.id.btnRead:
-                langdb.printWordTable();
-                break;
-            case R.id.btnClear:
-                langdb.clear();
-                break;
-        }
-    }
-
-    public void onBackupClicked(View view) {
-        Log.d(LOG_TAG, "Backup.");
-    }
-
-
 }
