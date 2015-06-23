@@ -2,6 +2,7 @@
 package com.altair.apushkar.woca.imp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,19 @@ public class MainActivity extends Activity {
     private Spinner esDirection;
     private EditText etWord;
     private ILanguageDB langdb;
+    
+//
+//    class MySimpleCursorAdapter extends SimpleCursorAdapter
+//    {
+//        MySimpleCursorAdapter(Context context, int layout, Cursor c, String[] from,
+//                              int[] to, int flags)
+//        {
+//            super(context, layout, c, from, to, flags);
+//        }
+//
+//        @Override
+//
+//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,16 +64,28 @@ public class MainActivity extends Activity {
         } else {
             Log.d(LOG_TAG, "Cursor is EMPTY!");
         }
-        /*SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
-                android.R.layout.simple_spinner_item,
+                R.layout.support_simple_spinner_dropdown_item,
                 cursor,
-                new String[] {""},
-                new int[] {android.R.id.text1},
+                new String[] {"LFROM", "LTO"},
+                new int[] {android.R.id.text1, android.R.id.text2},
                 0
-        );*/
+        );
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //esDirection.setAdapter(adapter);
+        adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
+            @Override
+            public CharSequence convertToString(Cursor cursor) {
+                String data = new String();
+                data += cursor.getString(cursor.getColumnIndex("LFROM"));
+                Log.d(LOG_TAG, "data is: " + data);
+                data += " - ";
+                data += cursor.getString(cursor.getColumnIndex("LTO"));
+                Log.d(LOG_TAG, "data is: " + data);
+                return data;
+            }
+        });
+        esDirection.setAdapter(adapter);
 
         Log.d(LOG_TAG, "Created activity");
     }

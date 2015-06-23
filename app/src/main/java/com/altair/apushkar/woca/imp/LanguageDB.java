@@ -188,19 +188,12 @@ public class LanguageDB implements ILanguageDB {
     @Override
     public Cursor getLanguagesCursor() {
         SQLiteDatabase db = getWritableDatabase();
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables("DIRECTION LEFT OUTER JOIN LANGUAGES ON ");
-        return db.rawQuery("SELECT L1.LANGUAGE, L2.LANGUAGE\n" +
-                "FROM DIRECTION\n" +
-                "JOIN LANGUAGES AS L1 ON DIRECTION.ID_FROM=L1._id\n" +
-                "JOIN LANGUAGES AS L2 ON DIRECTION.ID_TO=L2._id", new String[] {""});
-//        return db.query(LanguagesTable.Name,
-//                new String[] {LanguagesTable.Key, LanguagesTable.Parameters[0]},
-//                null,
-//                null,
-//                null,
-//                null,
-//                null);
+        String query = "select DIR.ID as _id, L1.LANGUAGE as LFROM, L2.LANGUAGE as LTO\n" +
+                "    from DIRECTION as DIR\n" +
+                "    inner join LANGUAGES as L1\n" +
+                "    inner join LANGUAGES as L2\n" +
+                "    on L1._ID=DIR.ID_FROM and L2._ID=DIR.ID_TO;";
+        return db.rawQuery(query, new String[]{});
     }
 
     @Override
