@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.altair.apushkar.woca.R;
 import com.altair.apushkar.woca.api.ILanguageDB;
@@ -22,19 +23,7 @@ public class MainActivity extends Activity {
     private Spinner esDirection;
     private EditText etWord;
     private ILanguageDB langdb;
-    
-//
-//    class MySimpleCursorAdapter extends SimpleCursorAdapter
-//    {
-//        MySimpleCursorAdapter(Context context, int layout, Cursor c, String[] from,
-//                              int[] to, int flags)
-//        {
-//            super(context, layout, c, from, to, flags);
-//        }
-//
-//        @Override
-//
-//    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,23 +57,11 @@ public class MainActivity extends Activity {
                 this,
                 R.layout.support_simple_spinner_dropdown_item,
                 cursor,
-                new String[] {"LFROM", "LTO"},
-                new int[] {android.R.id.text1, android.R.id.text2},
+                new String[] {"LRES"},
+                new int[] {android.R.id.text1},
                 0
         );
-        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
-            @Override
-            public CharSequence convertToString(Cursor cursor) {
-                String data = new String();
-                data += cursor.getString(cursor.getColumnIndex("LFROM"));
-                Log.d(LOG_TAG, "data is: " + data);
-                data += " - ";
-                data += cursor.getString(cursor.getColumnIndex("LTO"));
-                Log.d(LOG_TAG, "data is: " + data);
-                return data;
-            }
-        });
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         esDirection.setAdapter(adapter);
 
         Log.d(LOG_TAG, "Created activity");

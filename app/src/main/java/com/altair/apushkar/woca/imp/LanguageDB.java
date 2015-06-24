@@ -188,7 +188,7 @@ public class LanguageDB implements ILanguageDB {
     @Override
     public Cursor getLanguagesCursor() {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "select DIR.ID as _id, L1.LANGUAGE as LFROM, L2.LANGUAGE as LTO\n" +
+        String query = "select DIR.ID as _id, (L1.LANGUAGE || ' - ' || L2.LANGUAGE) as LRES\n" +
                 "    from DIRECTION as DIR\n" +
                 "    inner join LANGUAGES as L1\n" +
                 "    inner join LANGUAGES as L2\n" +
