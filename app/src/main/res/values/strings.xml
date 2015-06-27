@@ -9,4 +9,8 @@
     <string name="Search">Поиск</string>
     <string name="Word">Слово</string>
     <string name="Backup">Скопировать</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_add_word">Добавить слово</string>
+    <string name="action_add_language">Добавить язык</string>
+    <string name="action_add_translation_direction">Добавить направление перевода</string>
 </resources>

@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".imp.MainActivity">
+    <item android:id="@+id/action_add_word"
+        android:title="@string/action_add_word" />
+    <item android:id="@+id/action_add_language"
+        android:title="@string/action_add_language"/>
+    <item android:id="@+id/action_add_translation_direction"
+        android:title="@string/action_add_translation_direction"/>
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"/>
+</menu>
