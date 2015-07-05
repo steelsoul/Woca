@@ -188,11 +188,23 @@ public class LanguageDB implements ILanguageDB {
     @Override
     public Cursor getLanguagesCursor() {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "select DIR.ID as _id, (L1.LANGUAGE || ' - ' || L2.LANGUAGE) as LRES\n" +
+        String query = "select DIR.ID as _id, (L1.LANG || ' - ' || L2.LANG) as LRES\n" +
                 "    from DIRECTION as DIR\n" +
                 "    inner join LANGUAGES as L1\n" +
                 "    inner join LANGUAGES as L2\n" +
-                "    on L1._ID=DIR.ID_FROM and L2._ID=DIR.ID_TO;";
+                "    on L1.ID=DIR.ID_FROM and L2.ID=DIR.ID_TO;";
+        return db.rawQuery(query, new String[]{});
+    }
+
+    @Override
+    public Cursor getPresentation(Integer directionID)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "select PRES.ID as _id, (WT1.WORD_DATA || '-' ||  WT2.WORD_DATA) as LIST_LINE\n" +
+                "   from PRESENTATION as PRES\n" +
+                "   inner join WORDSTABLE as WT1\n" +
+                "   inner join WORDSTABLE as WT2\n" +
+                "   on WT1.ID=PRES.ID_WORD and WT2.ID=PRES.ID_TRANSL;";
         return db.rawQuery(query, new String[]{});
     }
 
@@ -240,8 +252,8 @@ public class LanguageDB implements ILanguageDB {
 
     public static final class LanguagesTable {
         final static String Name = "LANGUAGES";
-        final static String Key = "_id";
-        final static String[] Parameters = {"LANGUAGE"};
+        final static String Key = "ID";
+        final static String[] Parameters = {"LANG"};
         final static String[] PTypes = {"TEXT"};
     }
 

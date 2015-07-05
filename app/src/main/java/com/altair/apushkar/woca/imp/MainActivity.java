@@ -1,9 +1,10 @@
 
 package com.altair.apushkar.woca.imp;
 
-import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -18,13 +20,15 @@ import android.widget.Toast;
 import com.altair.apushkar.woca.R;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private final String LOG_TAG = "[MainActivity]";
-    private final String DB_NAME = "a5.db";
+    private final String DB_NAME = "vocruen.db";
 
     private Spinner esDirection;
     private EditText etWord;
+    private ListView presentationList;
     private ILanguageDB langdb;
+    private SimpleCursorAdapter scAdapter;
 
 
     @Override
@@ -66,6 +70,18 @@ public class MainActivity extends ActionBarActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         esDirection.setAdapter(adapter);
 
+        scAdapter = new SimpleCursorAdapter(
+                this,
+                R.layout.support_simple_spinner_dropdown_item,
+                null,
+                new String[] {"LIST_LINE"},
+                new int[] {android.R.id.text1},
+                0);
+        presentationList = (ListView)findViewById(R.id.listView);
+        presentationList.setAdapter(scAdapter);
+
+        getSupportLoaderManager().initLoader(0, null, this);
+
         Log.d(LOG_TAG, "Created activity");
     }
 
@@ -83,4 +99,37 @@ public class MainActivity extends ActionBarActivity {
         Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle bundle)
+    {
+        return new MyCursorLoader(this, langdb);
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+        scAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
+
+    }
+
+    static class MyCursorLoader extends android.support.v4.content.CursorLoader {
+        ILanguageDB db;
+
+        public MyCursorLoader(Context context, ILanguageDB db)
+        {
+            super(context);
+            this.db = db;
+        }
+
+        @Override
+        public Cursor loadInBackground() {
+            Cursor cursor = db.getPresentation(1);
+            return cursor;
+        }
+    }
+
 }
