@@ -157,7 +157,29 @@ public class LanguageDB implements ILanguageDB {
 */
     @Override
     public Integer getWordID(Integer langID, String word) {
-        return null;
+        Log.d(LOG_TAG, "getWordID " + langID + ", " + word);
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT PRES.ID\n" +
+                "FROM PRESENTATION as PRES\n" +
+                "INNER JOIN WORDSTABLE as WT\n" +
+                "ON WT.WORD_DATA='" + word + "' and WT.ID=ID_WORD;";
+        Cursor c = db.rawQuery(query, new String[]{});
+        Log.d(LOG_TAG, "Result: "+c.toString());
+        if (c != null)
+        {
+            if (c.moveToFirst())
+            {
+                int pos = c.getInt(c.getColumnIndex("ID"));
+                Log.d(LOG_TAG, "POS: " + pos);
+                return pos;
+            }
+        }
+//        if (c.getInt(c.getColumnIndex("PRES.ID"))){
+//            int pos = c.getInt(c.getColumnIndex("ID"));
+//            Log.d(LOG_TAG, "position " + pos);
+//            return pos;
+//        }
+        return -1;
     }
 
     @Override
@@ -197,14 +219,17 @@ public class LanguageDB implements ILanguageDB {
     }
 
     @Override
-    public Cursor getPresentation(Integer directionID)
+    public Cursor getPresentation(Integer from, Integer count)
     {
+        Log.d(LOG_TAG, "getPresentation " + from + ", " + count);
         SQLiteDatabase db = getWritableDatabase();
-        String query = "select PRES.ID as _id, (WT1.WORD_DATA || '-' ||  WT2.WORD_DATA) as LIST_LINE\n" +
+        String query = "select PRES.ID as _id, (WT1.WORD_DATA || ' : ' ||  WT2.WORD_DATA) as LIST_LINE\n" +
                 "   from PRESENTATION as PRES\n" +
                 "   inner join WORDSTABLE as WT1\n" +
                 "   inner join WORDSTABLE as WT2\n" +
-                "   on WT1.ID=PRES.ID_WORD and WT2.ID=PRES.ID_TRANSL;";
+                "   on PRES.ID >= " + from + " and\n" +
+                "   WT1.ID=PRES.ID_WORD and WT2.ID=PRES.ID_TRANSL\n" +
+                "   limit " + count + ";";
         return db.rawQuery(query, new String[]{});
     }
 

@@ -60,7 +60,7 @@ public interface ILanguageDB {
     public String translateTo(String to);
 
     public Cursor getLanguagesCursor();
-    public Cursor getPresentation(Integer direction);
+    public Cursor getPresentation(Integer from, Integer count);
 
     public void onCreate(SQLiteDatabase db);
     public void onUpgrade(SQLiteDatabase db);
