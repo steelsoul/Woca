@@ -12,6 +12,7 @@ import android.util.Log;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,11 +21,13 @@ import java.io.InputStreamReader;
 public class LanguageDB implements ILanguageDB {
     private final int dbVersion = 18;
     private final String LOG_TAG = "[LanguageDB]";
+    private String dbDirName;
     private String dbFileName;
     private AssetManager assetManager;
 
     public LanguageDB(Context context, String dbName) {
-        dbFileName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA/" + dbName;
+        dbDirName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA";
+        dbFileName = dbDirName + "/" + dbName;
         assetManager = context.getAssets();
     }
 
@@ -36,18 +39,26 @@ public class LanguageDB implements ILanguageDB {
             database.setVersion(dbVersion);
             Log.d(LOG_TAG, "Opened existing database");
         } catch (SQLiteException sqe) {
-            Log.e(LOG_TAG, sqe.toString());
+            Log.e(LOG_TAG, "Exception: " + sqe.toString());
         }
         return database;
     }
 
     private SQLiteDatabase getWritableDatabase() {
+        Log.d(LOG_TAG, "Get writable database");
         SQLiteDatabase db = openExistingDB();
         if (db == null)
         {
-            Log.d(LOG_TAG, "Get writable database");
+            Log.d(LOG_TAG, "Creating new one (" + dbFileName + ")");
+            File db_dir = new File(dbDirName);
+            if (!db_dir.exists()) {
+                if (!db_dir.mkdirs()) Log.e(LOG_TAG, "Can't create directories structure");
+                Log.d(LOG_TAG, "Directories structure is complete.");
+            }
             db = SQLiteDatabase.openDatabase(dbFileName, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             onCreate(db);
+            if (db != null) Log.d(LOG_TAG, "Created");
+            else Log.d(LOG_TAG, "Error happened during DB creation");
         }
         return db;
     }
