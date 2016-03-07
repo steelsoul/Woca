@@ -12,6 +12,7 @@ import android.util.Log;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,11 +21,13 @@ import java.io.InputStreamReader;
 public class LanguageDB implements ILanguageDB {
     private final int dbVersion = 18;
     private final String LOG_TAG = "[LanguageDB]";
+    private String dbDirName;
     private String dbFileName;
     private AssetManager assetManager;
 
     public LanguageDB(Context context, String dbName) {
-        dbFileName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA/" + dbName;
+        dbDirName = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/WOCA";
+        dbFileName = dbDirName + "/" + dbName;
         assetManager = context.getAssets();
     }
 
@@ -36,18 +39,26 @@ public class LanguageDB implements ILanguageDB {
             database.setVersion(dbVersion);
             Log.d(LOG_TAG, "Opened existing database");
         } catch (SQLiteException sqe) {
-            Log.e(LOG_TAG, sqe.toString());
+            Log.e(LOG_TAG, "Exception: " + sqe.toString());
         }
         return database;
     }
 
     private SQLiteDatabase getWritableDatabase() {
+        Log.d(LOG_TAG, "Get writable database");
         SQLiteDatabase db = openExistingDB();
         if (db == null)
         {
-            Log.d(LOG_TAG, "Get writable database");
+            Log.d(LOG_TAG, "Creating new one (" + dbFileName + ")");
+            File db_dir = new File(dbDirName);
+            if (!db_dir.exists()) {
+                if (!db_dir.mkdirs()) Log.e(LOG_TAG, "Can't create directories structure");
+                Log.d(LOG_TAG, "Directories structure is complete.");
+            }
             db = SQLiteDatabase.openDatabase(dbFileName, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             onCreate(db);
+            if (db != null) Log.d(LOG_TAG, "Created");
+            else Log.d(LOG_TAG, "Error happened during DB creation");
         }
         return db;
     }
@@ -157,7 +168,29 @@ public class LanguageDB implements ILanguageDB {
 */
     @Override
     public Integer getWordID(Integer langID, String word) {
-        return null;
+        Log.d(LOG_TAG, "getWordID " + langID + ", " + word);
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT PRES.ID\n" +
+                "FROM PRESENTATION as PRES\n" +
+                "INNER JOIN WORDSTABLE as WT\n" +
+                "ON WT.WORD_DATA='" + word + "' and WT.ID=ID_WORD;";
+        Cursor c = db.rawQuery(query, new String[]{});
+        Log.d(LOG_TAG, "Result: "+c.toString());
+        if (c != null)
+        {
+            if (c.moveToFirst())
+            {
+                int pos = c.getInt(c.getColumnIndex("ID"));
+                Log.d(LOG_TAG, "POS: " + pos);
+                return pos;
+            }
+        }
+//        if (c.getInt(c.getColumnIndex("PRES.ID"))){
+//            int pos = c.getInt(c.getColumnIndex("ID"));
+//            Log.d(LOG_TAG, "position " + pos);
+//            return pos;
+//        }
+        return -1;
     }
 
     @Override
@@ -197,14 +230,17 @@ public class LanguageDB implements ILanguageDB {
     }
 
     @Override
-    public Cursor getPresentation(Integer directionID)
+    public Cursor getPresentation(Integer from, Integer count)
     {
+        Log.d(LOG_TAG, "getPresentation " + from + ", " + count);
         SQLiteDatabase db = getWritableDatabase();
-        String query = "select PRES.ID as _id, (WT1.WORD_DATA || '-' ||  WT2.WORD_DATA) as LIST_LINE\n" +
+        String query = "select PRES.ID as _id, (WT1.WORD_DATA || ' : ' ||  WT2.WORD_DATA) as LIST_LINE\n" +
                 "   from PRESENTATION as PRES\n" +
                 "   inner join WORDSTABLE as WT1\n" +
                 "   inner join WORDSTABLE as WT2\n" +
-                "   on WT1.ID=PRES.ID_WORD and WT2.ID=PRES.ID_TRANSL;";
+                "   on PRES.ID >= " + from + " and\n" +
+                "   WT1.ID=PRES.ID_WORD and WT2.ID=PRES.ID_TRANSL\n" +
+                "   limit " + count + ";";
         return db.rawQuery(query, new String[]{});
     }
 

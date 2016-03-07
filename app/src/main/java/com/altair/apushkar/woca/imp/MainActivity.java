@@ -6,23 +6,32 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.altair.apushkar.woca.R;
 import com.altair.apushkar.woca.api.ILanguageDB;
 
-public class MainActivity extends ActionBarActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends ActionBarActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+        AbsListView.OnScrollListener {
     private final String LOG_TAG = "[MainActivity]";
     private final String DB_NAME = "vocruen.db";
+    private final int maxLines = 50;
+    private int currentPage = 0;
 
     private Spinner esDirection;
     private EditText etWord;
@@ -50,6 +59,52 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
             }
         });
         etWord = (EditText) findViewById(R.id.etWord);
+        etWord.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                Log.d(LOG_TAG, "onEditorAction ID: " + actionId);
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                    String text = v.getText().toString();
+                    Log.d(LOG_TAG, "onEditorAction " + text);
+                    if (text.length() > 0) {
+                        // TODO: replace with String Lang
+                        int posID = langdb.getWordID(2, text);
+                        if (posID > 0) {
+                            currentPage = posID;
+                            scAdapter.changeCursor(langdb.getPresentation(currentPage, maxLines));
+                            scAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+//        etWord.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                String textToFind = s.toString();
+//                Log.d(LOG_TAG, "afterTextChanged " + textToFind);
+//                if (textToFind.length() > 0) {
+//                    // TODO: replace with String Lang
+//                    int posID = langdb.getWordID(2, textToFind);
+//                    if (posID > 0) {
+//                        scAdapter.changeCursor(langdb.getPresentation(currentPage, maxLines));
+//                        scAdapter.notifyDataSetChanged();
+//                    }
+//                }
+//            }
+//        });
 
         langdb = new LanguageDB(this, DB_NAME);
 
@@ -79,6 +134,7 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
                 0);
         presentationList = (ListView)findViewById(R.id.listView);
         presentationList.setAdapter(scAdapter);
+        presentationList.setOnScrollListener(this);
 
         getSupportLoaderManager().initLoader(0, null, this);
 
@@ -116,7 +172,38 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
 
     }
 
+    // TODO: when load another data portion show it on the beginning/ending of the list
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        final int threshold = 5;
+
+        if (scrollState == SCROLL_STATE_IDLE) {
+            Log.d(LOG_TAG, "last visible position: " + view.getLastVisiblePosition());
+            Log.d(LOG_TAG, "first visible position: " + view.getFirstVisiblePosition());
+            if (view.getLastVisiblePosition() >= view.getCount() - 1 - threshold) {
+                currentPage+=maxLines;
+                Log.d(LOG_TAG, "CurrentPage (+): " + currentPage);
+                //load more list items:
+                scAdapter.changeCursor(langdb.getPresentation(currentPage, maxLines));
+                scAdapter.notifyDataSetChanged();
+            } else if (view.getFirstVisiblePosition() <= threshold + 1)
+            {
+                currentPage -= maxLines;
+                Log.d(LOG_TAG, "CurrentPage (-): " + currentPage);
+                scAdapter.changeCursor(langdb.getPresentation(currentPage, maxLines));
+                scAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//        Log.d(LOG_TAG, "onScroll " + firstVisibleItem + ", " +visibleItemCount + ", "+ totalItemCount);
+    }
+
     static class MyCursorLoader extends android.support.v4.content.CursorLoader {
+        static final String LOG_TAG = "MyCursorLoader";
         ILanguageDB db;
 
         public MyCursorLoader(Context context, ILanguageDB db)
@@ -127,7 +214,8 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
 
         @Override
         public Cursor loadInBackground() {
-            Cursor cursor = db.getPresentation(1);
+            Log.d(LOG_TAG, "loadInBackground");
+            Cursor cursor = db.getPresentation(1, 50);
             return cursor;
         }
     }
